@@ -6,6 +6,8 @@ const pool = new Pool({
     database: 'react_app',
     host: 'localhost',
     port: '5432',
-})
+});
+
+// \l \c \dt
 
 module.exports = pool;

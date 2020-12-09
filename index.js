@@ -1,28 +1,41 @@
 const express = require('express');
-const pool = require('./db/db')
-const session = require('express-session')
-const passport = require('passport')
-const cors = require('cors')
+const pool = require('./db/db');
+const session = require('express-session');
+const passport = require('passport');
+const cors = require('cors');
 
-const inializePassport = require('./passportConfig')
+const inializePassport = require('./passportConfig');
 
-inializePassport(passport)
+inializePassport(passport);
 
 const app = express();
-app.use(cors())
 
-app.use(express.json())
+var whitelist = ['http://localhost:3000', /** other domains if any */];
+var corsOptions = {
+    credentials: true,
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('myError: Not allowed by CORS'));
+        }
+    }
+};
+app.use(cors(corsOptions));
+//app.use(cors());
+
+app.use(express.json());
 app.use(session({
-    secret: "secret",
+    secret: 'secret',
     // store: new (require('connect-pg-simple')(session))(),
     resave: false,
     saveUninitialized: false,
     // cookie: {
     //     maxAge: 1000 * 60 * 60
     // }
-}))
-app.use(passport.initialize())
-app.use(passport.session())
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 
 
@@ -31,5 +44,5 @@ require('./routes/dogRoutes')(app, pool, passport);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-    console.log(`server listening on port ${PORT}`)  
-})
+    console.log(`server listening on port ${PORT}`);
+});
