@@ -8,19 +8,30 @@ module.exports = function (app, pool) {
 
     app.post('/savedog', checkAuthenticated, async (req, res) => {
         try {
-            const { breed, possibleSubBreed, imageUrl, possibleCustom } = req.body;
-            let subBreed = possibleSubBreed ? possibleSubBreed : null;
-            let custom = possibleCustom ? possibleCustom : false;
-
-            console.log(breed, subBreed, imageUrl, custom);
-
-            // TODO check subbreed
-
-            //TODO if custom then store picture
-            const newDog = await pool.query(
-                'INSERT INTO dogs (breed, subBreed, imageUrl, custom) VALUES ($1, $2, $3, $4) RETURNING *',
-                [breed, subBreed, imageUrl, custom]
-            );
+            const { breed, imageUrl, picture } = req.body;
+            let { subBreed, custom } = req.body;
+            if (subBreed === undefined) {
+                subBreed = null;
+            }
+            if (custom === undefined) {
+                custom = false;
+            }
+            console.log('saving dog:');
+            console.log(`breed:${breed}, subBreed:${subBreed}, imageUrl:${imageUrl}, custom:${custom}`);
+            let newDog = null;
+            if (custom) {
+                const pictureBytea = picture.split(',')[1];
+                newDog = await pool.query(                    
+                    // eslint-disable-next-line quotes
+                    "INSERT INTO dogs (breed, subBreed, imageUrl, custom, picture ) VALUES ($1, $2, $3, $4, decode($5, 'base64')) RETURNING *",
+                    [breed, subBreed, imageUrl, custom, pictureBytea]
+                );
+            } else {
+                newDog = await pool.query(
+                    'INSERT INTO dogs (breed, subBreed, imageUrl, custom) VALUES ($1, $2, $3, $4) RETURNING *',
+                    [breed, subBreed, imageUrl, custom]
+                );
+            }
 
             console.log(newDog.rows[0]);
             res.json(`dog: '${newDog.rows[0].breed}' inserted`);
@@ -33,10 +44,10 @@ module.exports = function (app, pool) {
     app.get('/getdogs', checkAuthenticated, async (req, res) => {
         try {
             const dogs = await pool.query(
-                'SELECT * FROM dogs'
+                // eslint-disable-next-line quotes
+                "SELECT dog_id, breed, subbreed, imageurl, custom, timestamp, encode(picture::bytea, 'base64') as picture FROM dogs"
             );
-            // console.log('dogs from db is: ');
-            // console.log(dogs.rows);
+            console.log(`got ${dogs.rows.length} dogs from db`);
 
             res.json(dogs.rows);
         } catch (err) {
@@ -160,7 +171,7 @@ const checkAuthenticated = (req, res, next) => {
         return next();
         //return res.json('already authenticated');
     }
-    return res.status(401).send({success: false, error: 'not authenticated'});
+    return res.status(401).send({ success: false, error: 'not authenticated' });
     //next();
 };
 
