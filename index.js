@@ -17,7 +17,7 @@ var corsOptions = {
         if (whitelist.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            callback(new Error('myError: Not allowed by CORS'));
+            callback(new Error('error: not in whitelist (Not allowed by CORS)'));
         }
     }
 };
@@ -34,8 +34,6 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-
-
 
 require('./routes/authRoutes')(app, pool, passport);
 require('./routes/dogRoutes')(app, pool, passport);

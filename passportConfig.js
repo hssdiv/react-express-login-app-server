@@ -3,7 +3,6 @@ const pool = require('./db/db');
 const bcrypt = require('bcrypt');
 
 const initialize = (passport) => {
-
     const authenticateUser = async (email, password, done) => {
         // console.log(email,password);
         // if (email === undefined && password === undefined) {
@@ -53,7 +52,6 @@ const initialize = (passport) => {
             return done(null, user);
         }
     });
-
 };
 
 module.exports = initialize;
