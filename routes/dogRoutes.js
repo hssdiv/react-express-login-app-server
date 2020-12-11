@@ -50,9 +50,10 @@ module.exports = function (app, pool) {
     app.patch('/updatedog', checkAuthenticated, async (req, res) => {
         try {
             const { dog_id, breed, subBreed } = req.body;
+            console.log(breed, subBreed);
 
             let queryString = 'UPDATE dogs SET ';
-            const variableArray = [dog_id];
+            const queryVariablesArray = [dog_id];
 
             if (!dog_id) {
                 throw { message: 'no dog_id provided for updating' };
@@ -63,44 +64,22 @@ module.exports = function (app, pool) {
             }
 
             if (breed) {
-                queryString += 'breed=$2,';
-                variableArray.push(breed);
+                queryString += 'breed=$2';
+                queryVariablesArray.push(breed);
+                if (subBreed) queryString += ', ';
             }
             
             if (subBreed) {
                 queryString += 'subBreed=$3 ';
-                variableArray.push(subBreed);
+                queryVariablesArray.push(subBreed);
             }
 
             queryString += 'WHERE dog_id=$1';
 
             await pool.query(
                 queryString,
-                variableArray
+                queryVariablesArray
             );
-
-            // if (breed) {
-            //     if (subBreed) {
-            //         await pool.query(
-            //             'UPDATE dogs SET breed=$2, subBreed=$3 WHERE dog_id=$1',
-            //             [dog_id, breed, subBreed]
-            //         );
-            //     } else {
-            //         await pool.query(
-            //             'UPDATE dogs SET breed=$2 WHERE dog_id=$1',
-            //             [dog_id, breed]
-            //         );
-            //     }
-            // } else {
-            //     if (subBreed) {
-            //         await pool.query(
-            //             'UPDATE dogs SET subBreed=$2 WHERE dog_id=$1',
-            //             [dog_id, subBreed]
-            //         );
-            //     } else {
-            //         throw { message: 'no breed or subbreed provided' };
-            //     }
-            // }
 
             console.log(`dog updated to ${breed}-${subBreed ? subBreed : ''}`);
             res.json('dog updated');
