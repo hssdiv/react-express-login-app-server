@@ -15,8 +15,7 @@ module.exports = function (app, pool) {
             if (custom) {
                 const pictureBytea = picture.split(',')[1];
                 newDog = await pool.query(
-                    // eslint-disable-next-line quotes
-                    "INSERT INTO dogs (breed, subBreed, imageUrl, custom, picture ) VALUES ($1, $2, $3, $4, decode($5, 'base64')) RETURNING *",
+                    'INSERT INTO dogs (breed, subBreed, imageUrl, custom, picture ) VALUES ($1, $2, $3, $4, decode($5, \'base64\')) RETURNING *',
                     [breed, subBreed, imageUrl, custom, pictureBytea]
                 );
             } else {
@@ -30,7 +29,6 @@ module.exports = function (app, pool) {
             res.json(`dog: '${newDog.rows[0].breed}' inserted`);
         } catch (err) {
             console.log(err.message);
-            //res.status(404).send(`save dog error: ${err.message}`);
             res.status(404).json(err.message);
         }
     });
@@ -38,8 +36,7 @@ module.exports = function (app, pool) {
     app.get('/getdogs', checkAuthenticated, async (req, res) => {
         try {
             const dogs = await pool.query(
-                // eslint-disable-next-line quotes
-                "SELECT dog_id, breed, subbreed, imageurl, custom, timestamp, encode(picture::bytea, 'base64') as picture FROM dogs"
+                'SELECT dog_id, breed, subbreed, imageurl, custom, timestamp, encode(picture::bytea, \'base64\') as picture FROM dogs'
             );
             console.log(`got ${dogs.rows.length} dogs from db`);
 
@@ -140,9 +137,6 @@ module.exports = function (app, pool) {
             console.log(err.message);
             res.json(`delete selected dogs failure: ${err.message}`);
         }
-
-
-
     });
 
     app.delete('/deletedogs', checkAuthenticated, async (req, res) => {
@@ -163,17 +157,6 @@ module.exports = function (app, pool) {
 const checkAuthenticated = (req, res, next) => {
     if (req.isAuthenticated()) {
         return next();
-        //return res.json('already authenticated');
     }
     return res.status(401).send({ success: false, error: 'not authenticated' });
-    //next();
 };
-
-/*ok: true
-redirected: false
-status: 200
-statusText: "OK"*/
-
-/*ok: false
-redirected: false
-status: 401*/
