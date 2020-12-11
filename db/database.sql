@@ -15,3 +15,6 @@ CREATE TABLE dogs(
     custom BOOLEAN NOT NULL,
     timestamp TIMESTAMP DEFAULT NOW()
 );
+
+ALTER TABLE dogs ADD COLUMN picture bytea;
+ALTER TABLE ONLY dogs ALTER COLUMN custom SET DEFAULT false;

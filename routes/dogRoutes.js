@@ -1,27 +1,20 @@
 module.exports = function (app, pool) {
-    /*dog_id SERIAL PRIMARY KEY,
-    breed VARCHAR(256),
-    subBreed VARCHAR(256),
-    imageUrl VARCHAR(256),
-    custom BOOLEAN NOT NULL,
-    timestamp TIMESTAMP DEFAULT NOW()*/
-
     app.post('/savedog', checkAuthenticated, async (req, res) => {
         try {
-            const { breed, imageUrl, picture } = req.body;
-            let { subBreed, custom } = req.body;
-            if (subBreed === undefined) {
-                subBreed = null;
-            }
+            const { breed, subBreed, imageUrl, picture } = req.body;
+            let { custom } = req.body;
+
             if (custom === undefined) {
                 custom = false;
             }
+
             console.log('saving dog:');
             console.log(`breed:${breed}, subBreed:${subBreed}, imageUrl:${imageUrl}, custom:${custom}`);
+
             let newDog = null;
             if (custom) {
                 const pictureBytea = picture.split(',')[1];
-                newDog = await pool.query(                    
+                newDog = await pool.query(
                     // eslint-disable-next-line quotes
                     "INSERT INTO dogs (breed, subBreed, imageUrl, custom, picture ) VALUES ($1, $2, $3, $4, decode($5, 'base64')) RETURNING *",
                     [breed, subBreed, imageUrl, custom, pictureBytea]
@@ -37,7 +30,8 @@ module.exports = function (app, pool) {
             res.json(`dog: '${newDog.rows[0].breed}' inserted`);
         } catch (err) {
             console.log(err.message);
-            res.json(`save dog error: ${err.message}`);
+            //res.status(404).send(`save dog error: ${err.message}`);
+            res.status(404).json(err.message);
         }
     });
 

@@ -39,10 +39,6 @@ module.exports = function (app, pool, passport) {
         res.json('You have logged out successfully' );
     });
 
-    app.get('/test', checkAuthenticated, async (req, res) => {
-        res.json('test');
-    });
-
     app.delete('/delete', async (req, res) => {
         try {
             const { email, password } = req.query;
